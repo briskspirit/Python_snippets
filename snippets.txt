@@ -1258,7 +1258,7 @@ message.tex_part.get_payload().decode('UTF-8') - to get text part of our mail
 conn.logout()
 
 ===========================
-pyautogui - to control mouse or keyboard, screenshots , third-party module
+pyautogui - to control mouse or keyboard, screenshots , image recognition(!), third-party module
 
 pyautogui.moveTo((x,y), duration=1) - move mouse to x,y with duration in seconds.
 pyautogui.click(x,y)  - can accept just two integers or a tuple containing two integers.
@@ -1336,7 +1336,7 @@ button3.grid(row=2, column=0)
 mainWindow.mainloop()
 ==============================================
 
-Multi Treading:
+Multi-Threading:
 
 # Just a hint how to use and where to dig to make 4 threads that will be running same function with same(but separate chunks) data. Could be used to process large amount of data. 
 
