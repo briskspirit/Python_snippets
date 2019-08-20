@@ -1694,10 +1694,15 @@ some_new_env\Scripts\python # will trigger isolated python interpreter
 some_new_env\Scripts\pip # will trigger pip for that isolated environment
 
 ====================================================================================
+====================================================================================
+====================================================================================
 
 Working with SQL:
 
 sqlite3 - lib to interact with SQLite3 (built in Python library with SQLite3 "server"!)
+Data types: NULL, INTEGER, REAL(float point number), TEXT, BLOB
+---
+    import sqlite3
 
     conn = sqlite3.connect("lite.db")  # Will connect to DB or create it
     cur = conn.cursor() # Create cursor to database
@@ -1712,5 +1717,76 @@ sqlite3 - lib to interact with SQLite3 (built in Python library with SQLite3 "se
     conn.commit()
     conn.close()
 
-
+-----------------------
 psycopg2 - lib to interact with PostgreSQL(lib needs to be installed(could ask for C compiler), PostgreSQL needs to be installed too)
+Data types: 
+    Numeric: bigint, bigserial, double precision, integer, numeric(or decimal), real, smallint, smallserial, serial
+    Character: character, character varying(or varchar), text
+    Date and time: date, interval, time(or time without time zone), time with time zone, timestamp(or timestamp without time zone), timestamp with time zone
+    Geometric: box, circle, line, lseg, path, point, polygon
+    Network address: cidr, inet, macaddr
+    Bit string: bit, bit varying
+    Text search: tsquery, tsvector
+    JSON: json, jsonb
+    Other: boolean, bytea, money, pg_lsn, txid_snapshot, uuid, xml
+---
+    import psycopg2
+    
+    conn = psycopg2.connect("dbname='some_database' user='admin' password='pass123' host='localhost' port='5432'")  # Will connect to DB or create it
+    cur = conn.cursor() # Create cursor to database
+
+    cur.execute("CREATE TABLE IF NOT EXISTS contacts(_id SERIAL, name TEXT, phone INTEGER, email TEXT)") # In PostgreSQL SERIAL or BIGSERIAL/SMALLSERIAL data type is an abstract of INTEGER that will autoincrement by default
+    cur.execute("INSERT INTO contacts(name, email) VALUES('Vasia0', 'some@gmail.com')")  # If not all values are given or wrong order
+    #cur.execute("INSERT INTO contacts VALUES('Vasia1', 4440449334, 'some@gmail.com')")  # If all values are given in correct order, but BAD practice!!
+    
+    cur.execute("INSERT INTO contacts(name, phone, email) VALUES('{}', '{}', '{}')".format('Vasia2', 444044333, 'some2@gmail.com'))  # To pass data to SQL query we are formating string with Python, BAD practice because SQL injection attack is possible! This is better:
+    cur.execute("INSERT INTO contacts(name, phone, email) VALUES(%s, %s, %s)", ('Vasia2', 444044333, 'some2@gmail.com'))
+
+    cur.execute("DELETE FROM contacts WHERE name='{}'".format('Vasia0'))  # Delete data, BAD practice because SQL injection attack is possible! This is better:
+    cur.execute("DELETE FROM contacts WHERE name=%s", ('Vasia0',))
+
+    print(cur.execute("SELECT * FROM contacts WHERE name='Vasia2'").fetchall())  # Return all matched rows
+
+    conn.commit()
+    conn.close()
+
+-----------------------
+mysql.connector - lib to interact with MySQL(pip install mysql-connector)
+Data types: 
+    Numeric: tinyint, smallint, mediumint, int(or integer), bigint, float, double(double precission or real), dec(decimal, fixed or numeric), bool(or boolean), bit
+    Date and time: date, datetime, timestamp, time, year
+    String: char, varchar, binary, varbinary, blob, tinyblob, mediumblob, longblob, text, tinytext, mediumtext, longtext, enum, set
+---
+    import mysql.connector
+    
+    conn = mysql.connector.connect(user="admin", password="pass123", host="localhost", database="some_database")  # Will connect to DB or create it
+    cur = conn.cursor() # Create cursor to database
+
+    cur.execute("CREATE TABLE IF NOT EXISTS 'contacts' ('_id' int(11) AUTO_INCREMENT , 'name' varchar(50) NOT NULL, 'phone' int(16), 'email' varchar(32), PRIMARY_KEY ('_id'))") 
+    cur.execute("INSERT INTO 'contacts' ('name', 'email') VALUES ('Vasia0', 'some@gmail.com')")  # If not all values are given or wrong order
+    #cur.execute("INSERT INTO 'contacts' VALUES('Vasia1', 4440449334, 'some@gmail.com')")  # If all values are given in correct order, but BAD practice!!
+    
+    cur.execute("INSERT INTO 'contacts'('name', 'phone', 'email') VALUES ('{}', '{}', '{}')".format('Vasia2', 444044333, 'some2@gmail.com'))  # To pass data to SQL query we are formating string with Python
+
+    cur.execute("DELETE FROM 'contacts' WHERE 'name'='{}'".format('Vasia0'))  # Delete data, formating with Python
+
+    print(cur.execute("SELECT * FROM 'contacts' WHERE 'name'='Vasia2'").fetchall())  # Return all matched rows
+
+    conn.commit()
+    conn.close()
+
+
+====================================================================================
+====================================================================================
+====================================================================================
+
+pip install pyinstaller - library to make standalone executable files(.exe or .app for Mac)
+
+Call pyinstaller and point to your main script like so(but you will get bunch of supporting/debugging files in your folder):
+pyinstaller __main__.py
+
+So you could use(will be executed as console app):
+pyinstaller --onefile __main__.py
+
+For GUI apps(could be used to make "blind" apps??):
+pyinstaller --onefile --windowed __main__.py 
