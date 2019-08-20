@@ -4,6 +4,9 @@
 
 * **:
 - conda install module_name or pip install module_name
+To update ALL modules:
+$ pip install pip-review
+$ pip-review --local --interactive
 
 Basic:
 - 1*1 1-1 1+1 1/2 2**2 2**0.5
@@ -34,6 +37,15 @@ sys.getsizeof(object) - will return object size(in memory(?)) in bytes.
 - help() - show help for object
 - if __name__ = '__main__':  # - so we are checking the scope. If .py run itself - do code. If it was imported as a module - don't run.
 - print(string, output) - if output is skipped - will out to default output(console), print(string, file) will output to file(should object type file, not just path!)!  
+- MUTABLE: only lists and dictionaries! All other types are immutable: variable, string, tuple, named tuple etc.
+Best way to assemble immutable strings is to accumulate string parts in the list and then use "".join() to "glue" these parts.(Best for adding to string or joining a list. For joining pre-determined number of strings use addition(+) operator )
+  foobar = 'foo' + 'bar'  # This is good
+  foo += 'ooo'  # This is bad, instead you should do:
+  foo = ''.join([foo, 'ooo'])
+
+  foobar = '%s%s' % (foo, bar) # It is OK
+  foobar = '{0}{1}'.format(foo, bar) # It is better
+  foobar = '{foo}{bar}'.format(foo=foo, bar=bar) # It is best
 
 -------------------------------------------------------------
 
@@ -188,7 +200,7 @@ Files:
 NEW TECHNICS TO WORK WITH FILES:
 
 with open('test.txt', 'w') as test_file:
-  #do files operation. with operator will close the file automaticaly.
+  #do files operation. with operator will close the file automaticaly(Called Context Manager).
 
 ---
 
@@ -684,6 +696,27 @@ in our manually created module in main func(if it exists and if your module can 
 if __name__ = '__main__':  # - so we are checking the scope. If .py run itself - do code. If it was imported as a module - don't run.
     do code in main func to execute program itself
 
+---
+
+Very bad
+
+[...]
+from modu import *
+[...]
+x = sqrt(4)  # Is sqrt part of modu? A builtin? Defined above?
+====
+Better
+
+from modu import sqrt
+[...]
+x = sqrt(4)  # sqrt may be part of modu, if not redefined in between
+====
+Best
+
+import modu
+[...]
+x = modu.sqrt(4)  # sqrt is visibly part of modu's namespace
+
 -------------------------------------------------------------
 
 map(function, sequence):  - applies function to each element in the sequence and returns new list(iterator!) with results! Sequence = list.
@@ -1113,7 +1146,7 @@ import pyperclip     - should be installed by pip
 
 info = pyperclip.paste() - will return a string of data in the clipboard.
 ------------------
-import requests       - should be installed
+import requests       - should be installed(pip install requests[socks] better?)
 
 res = requests.get(src)  - downloads file from the Web, returns server answer
 res.status_code   - returns status code like 200, 404, 503 and etc.
@@ -1403,3 +1436,281 @@ start_time = perf_counter()
 (do some workload)
 
 print("--- {} seconds ---".format(perf_counter() - start_time))
+
+===============================================
+
+requirements.txt - holds info for pip about module requirements for your script. Those requirements could be installed by this command:
+
+pip install -r requirements.txt
+
+==================================================
+
+Context Managers
+A context manager is a Python object that provides extra contextual information to an action. This extra information takes the form of running a callable upon initiating the context using the with statement, as well as running a callable upon completing all the code inside the with block. The most well known example of using a context manager is shown here, opening on a file:
+
+with open('file.txt') as f:
+    contents = f.read()
+Anyone familiar with this pattern knows that invoking open in this fashion ensures that f’s close method will be called at some point. This reduces a developer’s cognitive load and makes the code easier to read.
+
+There are two easy ways to implement this functionality yourself: using a class or using a generator. Let’s implement the above functionality ourselves, starting with the class approach:
+
+class CustomOpen(object):
+    def __init__(self, filename):
+        self.file = open(filename)
+
+    def __enter__(self):
+        return self.file
+
+    def __exit__(self, ctx_type, ctx_value, ctx_traceback):
+        self.file.close()
+
+with CustomOpen('file') as f:
+    contents = f.read()
+This is just a regular Python object with two extra methods that are used by the with statement. CustomOpen is first instantiated and then its __enter__ method is called and whatever __enter__ returns is assigned to f in the as f part of the statement. When the contents of the with block is finished executing, the __exit__ method is then called.
+
+And now the generator approach using Python’s own contextlib:
+
+from contextlib import contextmanager
+
+@contextmanager
+def custom_open(filename):
+    f = open(filename)
+    try:
+        yield f
+    finally:
+        f.close()
+
+with custom_open('file') as f:
+    contents = f.read()
+This works in exactly the same way as the class example above, albeit it’s more terse. The custom_open function executes until it reaches the yield statement. It then gives control back to the with statement, which assigns whatever was yield’ed to f in the as f portion. The finally clause ensures that close() is called whether or not there was an exception inside the with.
+
+Since the two approaches appear the same, we should follow the Zen of Python to decide when to use which. The class approach might be better if there’s a considerable amount of logic to encapsulate. The function approach might be better for situations where we’re dealing with a simple action.
+
+==================================================
+
+Setting another absolute path for our script to import module from parent directories(this will go level up and import parent_sample_module, very convenient for example for unittests that are located in /tests/ folder ):
+
+import os
+import sys
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
+import parent_sample_module
+
+=================================================
+
+unittest
+unittest is the batteries-included test module in the Python standard library. Its API will be familiar to anyone who has used any of the JUnit/nUnit/CppUnit series of tools.
+
+Creating test cases is accomplished by subclassing unittest.TestCase.
+
+import unittest
+
+def fun(x):
+    return x + 1
+
+class MyTest(unittest.TestCase):
+    def test(self):
+        self.assertEqual(fun(3), 4)
+
+=================================================
+
+Doctest
+The doctest module searches for pieces of text that look like interactive Python sessions in docstrings, and then executes those sessions to verify that they work exactly as shown.
+
+Doctests have a different use case than proper unit tests: they are usually less detailed and don’t catch special cases or obscure regression bugs. They are useful as an expressive documentation of the main use cases of a module and its components. However, doctests should run automatically each time the full test suite runs.
+
+A simple doctest in a function:
+
+def square(x):
+    """Return the square of x.
+
+    >>> square(2)
+    4
+    >>> square(-2)
+    4
+    """
+
+    return x * x
+
+if __name__ == '__main__':
+    import doctest
+    doctest.testmod()
+When running this module from the command line as in python module.py, the doctests will run and complain if anything is not behaving as described in the docstrings.
+
+==========================================================
+
+py.test
+py.test is a no-boilerplate alternative to Python’s standard unittest module.
+
+$ pip install pytest
+Despite being a fully-featured and extensible test tool, it boasts a simple syntax. Creating a test suite is as easy as writing a module with a couple of functions:
+
+# content of test_sample.py
+def func(x):
+    return x + 1
+
+def test_answer():
+    assert func(3) == 5
+and then running the py.test command:
+
+$ py.test
+=========================== test session starts ============================
+platform darwin -- Python 2.7.1 -- pytest-2.2.1
+collecting ... collected 1 items
+
+test_sample.py F
+
+================================= FAILURES =================================
+_______________________________ test_answer ________________________________
+
+    def test_answer():
+>       assert func(3) == 5
+E       assert 4 == 5
+E        +  where 4 = func(3)
+
+test_sample.py:5: AssertionError
+========================= 1 failed in 0.02 seconds =========================
+is far less work than would be required for the equivalent functionality with the unittest module!
+
+
+====================================================================================
+
+import difflib - standard lib to compare text
+---
+from difflib import SequenceMatcher
+from difflib import get_close_matches
+
+SequenceMatcher(None, "rainn", "rain").ratio() - will return float from 0 to 1 which states of similarity of two words
+
+get_close_matches("rainn", ["rain", "rainy", "train", "bus", "apple"], 2, 0.6) - will return a list with max 2 words with similarity ratio above 0.6 from the list
+====================================================================================
+
+Pandas - is a third-party module to analize data(without visualization). Pandas dataframe has lots of methods built in for data analisys. Dataframe is made of Series
+
+import pandas
+
+df1 = pandas.DataFrame([[2,4,6],[20,40,60]]) - This will create a Pandas dataframe(object used to store data in Pandas.) In this exapmle dataframe will be created from a list of lists(so will create a table)(Also could pass dictionaries!) Columns and rows willl be named as 0 1 2 and so on. If you wan't to use your own column names or indexes names(rows) :
+df1 = pandas.DataFrame([[2,4,6],[20,40,60]], columns=["Type","Age","Price"], indexes=["some1", "some2"])
+
+df1.Price will return Series of "Price" column
+
+df1.mean() - will return average values of each column.
+df1.mean().mean() - will return table average(after column average)
+
+---
+
+import pandas
+
+df1 = pandas.read_csv("file.csv")
+df2 = pandas.read_json("file.json")
+df3 = pandas.read_excel("file.xlsx", sheetname=0) - third-party module could be needed: pip install xlrd (And you need to pass sheet index to use)
+
+df4 = pandas.read_csv("file_semicolon_separated.txt", sep=";") - Separator(sep) could be virtualy anything!
+
+# Previous examples will load first string as a header(columns names). To load data without a header:
+
+df5 = pandas.read_csv("file.csv", header=None)
+
+# We could assign column names later:
+
+df5.columns = ["some1", "some2", "etc3"]
+
+#Assign column as an index(as a row names/IDs):
+
+df.set_index("some1") - does not modify dataframe but returns new one (Immutable method)
+df.set_index("some1", inplace=True) - will modify dataframe (like mutable)(CAREFUL! will delete previous index column if you will set a new one!)
+df.set_index("some2", inplace=True, drop=False) - will change index column to a new one, but won't delete the previous one
+
+# Extracting data
+df.loc["some1":"some2", 1:4] - this will return a portion of our data selected by ranges in columns and indexes(rows). That way we can select specific part that we need. Without range you can access exact cell
+
+list(df.loc[:, "Country"]) - That way you will select one column from all rows. (vertically)
+
+df.iloc[1:3, 1:4] - now we are using raw indexes for both columns and rows(as we use in lists)
+
+#Deleting data
+
+df7.drop("City", 1) - Immutable. Will return new object. Will delete whole column(second parameter 1) or could delete row (second parameter 0)
+df7.drop(df7.index[1,3], 0) - delete rows 1 and 2
+df7.drop(df7.columns[1,3], 1) - delete columns 1 and 2
+
+#Updating and adding
+
+df["new_column"]=[45,42,66] - will add a new column and populate with data(should be exact length!)
+df.shape - returns tuple of rows and columns count.
+
+df["new_column"] = df["old1_column"] + df["old2_column"] - will create a new column from values of both "old" columns
+
+THERE IS NO EASY WAY TO ADD A NEW ROW!:
+df_t = df.T - will "rotate" your table, so rows become columns and vise versa. Now you can add a new column and rotate it back(so your new addition becomes a new row - hack?)
+
+====================================================================================
+
+NumPy - provides N-dimensional array object, useful linear algebra, Fourier transform, and random number capabilities
+Besides its obvious scientific uses, NumPy can also be used as an efficient multi-dimensional container of generic data. Arbitrary data-types can be defined. This allows NumPy to seamlessly and speedily integrate with a wide variety of databases.
+Modules like Pandas, OpenCV and etc (and their objects!) are based on NumPy arrays because of more robust performance compared to Python lists.
+
+import numpy
+
+n = numpy.arange(27) - will create one dimension array and(?)
+n.reshape(3,9) - will modify 1-dimensional into 2-dimensional array.
+
+n=numpy.asarray([[1,2,3], [4,5,6], [7,8,9]]) - will convert Python list into NumPy 2-dimensional array.
+
+To access/slice a NumPy array use the same technics as for lists/strings.(indexes, ranges ...)(Don't forget about dimensions!)
+
+n.shape - returns shape(size) of an array as a tuple
+
+n.T - will "rotate" your array
+n.flat - lets you iterate through each value as through a list of lists.
+
+-------
+
+Stacking and splitting
+
+big_array=numpy.hstack((array1, array2)) - will stack arrays horizontally. Should be passed to hstack as tuple!should be the same dimmension array!
+big_array=numpy.vstack((array1, array2)) - will stack arrays vertially. Should be passed to vstack as tuple!should be the same dimmension array!
+
+splitted_array_list = numpy.hsplit(big_array, 3) - will return Python list of 3 NumPy arrays split from array horizontally.
+splitted_array_list = numpy.vsplit(big_array, 3) - will return Python list of 3 NumPy arrays split from array vertically.
+
+
+
+====================================================================================
+OpenCV
+
+import cv2
+
+img = cv2.imread("someimage.png", 0) - 0 is for grayscale and 1 is for BGR(will load as a 3-dimensional array). Will load the picture with OpenCV module and place it into NumPy array.(2-dimensional)
+
+cv2.imwrite("newimage.png", img) - will create an image from NumPy array
+
+====================================================================================
+???
+pip install virtualenv
+python -m venv some_new_env #will create new virtual environment with all installation, ideally should be installed for each more or less serious project to track modules, their versions and pip requirements.txt
+
+some_new_env\Scripts\python # will trigger isolated python interpreter
+some_new_env\Scripts\pip # will trigger pip for that isolated environment
+
+====================================================================================
+
+Working with SQL:
+
+sqlite3 - lib to interact with SQLite3 (built in Python library with SQLite3 "server"!)
+
+    conn = sqlite3.connect("lite.db")  # Will connect to DB or create it
+    cur = conn.cursor() # Create cursor to database
+
+    cur.execute("CREATE TABLE IF NOT EXISTS contacts(_id INTEGER PRIMARY KEY, name TEXT, phone INTEGER, email TEXT)") # In SQLite INTEGER PRIMARY KEY will autoincrement by default
+    cur.execute("INSERT INTO contacts(name, email) VALUES('Vasia0', 'some@gmail.com')")  # If not all values are given or wrong order
+    #cur.execute("INSERT INTO contacts VALUES('Vasia1', 4440449334, 'some@gmail.com')")  # If all values are given in correct order, but BAD practice!!
+    cur.execute("INSERT INTO contacts(name, phone, email) VALUES(?, ?, ?)", ('Vasia2', 444044333, 'some2@gmail.com'))  # To pass data to SQL query we are passing a tuple to execute func
+    cur.execute("DELETE FROM contacts WHERE name=?", ('Vasia0',))  # Delete data, supplied tuple must end with comma if only one item is given!!!
+    print(cur.execute("SELECT * FROM contacts WHERE name='Vasia2'").fetchall())  # Return all matched rows
+
+    conn.commit()
+    conn.close()
+
+
+psycopg2 - lib to interact with PostgreSQL(lib needs to be installed(could ask for C compiler), PostgreSQL needs to be installed too)
