@@ -1585,7 +1585,7 @@ SequenceMatcher(None, "rainn", "rain").ratio() - will return float from 0 to 1 w
 get_close_matches("rainn", ["rain", "rainy", "train", "bus", "apple"], 2, 0.6) - will return a list with max 2 words with similarity ratio above 0.6 from the list
 ====================================================================================
 
-Pandas - is a third-party module to analize data(without visualization). Pandas dataframe has lots of methods built in for data analisys. Dataframe is made of Series
+Pandas - is a third-party module to analize data(without visualization). Pandas dataframe has lots of methods built in for data analisys. Dataframe is made of Series (For Excel files xlrd module may be needed)
 
 import pandas
 
@@ -1681,9 +1681,42 @@ OpenCV
 
 import cv2
 
-img = cv2.imread("someimage.png", 0) - 0 is for grayscale and 1 is for BGR(will load as a 3-dimensional array). Will load the picture with OpenCV module and place it into NumPy array.(2-dimensional)
+img = cv2.imread("someimage.png", 0) - 0 is for grayscale(2-dimensional array), 1 is for BGR(will load as a 3-dimensional array) and -1 for BGR + alpha(transparency) channel(good for PNG, GIF and etc or if you will work with transparency(3-dimensional)). Will load the picture with OpenCV module and place it into NumPy array.(2-dimensional)
+
+img.shape - will return tuple with height, width and channel(if 3-dimensional image array(color)) dimensions. !!!! Will return Y and then X ;)
+img.ndim - will return how many dimensions an array has
+
+img = cv2.resize(img, (1000,500)) - will return resized image. Needs an image and width and height tuple (in pixels or in scale factor(float))
+
+cv2.imshow("Title", img) - will open a window with image
+cv2.waitKey(0) - window will close when any button pressed
+cv2.waitKey(2000) - will close in 2000ms
+cv2.destroyAllWindows() - will destroy window after waitKey() func
+
+gray_img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY) - will convert BGR image to grayscale
 
 cv2.imwrite("newimage.png", img) - will create an image from NumPy array
+
+---
+
+img = cv2.rectangle(img, (x,y,w,h), (0,255,0), 3) - will draw a rectangle, takes image to draw on, tuple with X, Y and width, height of it; takes rectangle color in BGR tuple, width of rectangle lines
+
+---------------------
+
+video = cv2.VideoCapture(0) - takes number of a video device(0 will be for first default webcam) or takes a file
+
+check, frame = video.read() - gets first frame, returns boolean if it captured it successfuly and a NumPy array with BGR
+cv2.imshow("Capturing", frame) - will show that 1st frame(so need a loop to show a video):
+
+wile True:
+  check, frame = video.read()
+  cv2.imshow("Capturing", frame)
+  if cv2.waitKey(33) == ord('q'): - wait 33ms, which is similar to ~30FPS(but that will set max framerate, if you set 1ms it will still wait to get a new frame from VideoCapture), ord converts pressed key to its hex value
+    break
+
+cv2.destroyAllWindows()
+
+video.release() - will release captured device(should do before exit)
 
 ====================================================================================
 ???
@@ -1790,3 +1823,40 @@ pyinstaller --onefile __main__.py
 
 For GUI apps(could be used to make "blind" apps??):
 pyinstaller --onefile --windowed __main__.py 
+
+
+====================================================================================
+
+bokeh - library to visualize data in a Web Browser(somewhat similar to matplotlib and seaborn) (More modern?)
+
+from bokeh.plotting import figure, output_file, show
+# from bokeh.models import HoverTool, ColumnDataSource # Used to create hover tools
+from bokeh.embed import components  # Used to get JS and HTML to embed into a web page
+from bokeh.resources import CDN  # To generate JS links for your HTML headers
+
+if __name__ == "__main__":
+
+    x = [1, 2, 3, 4, 5]
+    y = [6, 7, 8, 9, 10]
+
+    # f = figure() # Could be used as is or with aditional parameters:
+    f = figure(plot_width=1000, plot_height=500, tools='pan')  # tools - will limit available tools to selected ones
+    f.title.text = "My Graph"
+    f.title.text_color = "Orange"
+    f.xaxis.axis_label = "Date"
+    f.yaxis.axis_label = "Intensity"
+    f.xaxis.minor_tick_line_color = "Red"
+    f.yaxis.minor_tick_line_color = None
+
+    f.line(x, y, color="red")
+    f.triangle(x, y, color="green")
+    f.circle(x, y, size=15, color="black", alpha=0.3)  # size could be used for circles and triangles
+    f.quad(top=[2, 3, 4], bottom=[1, 2, 3], left=[1, 2, 3], right=[1.2, 2.5, 3.7], color="#B3DE69")
+
+    # To output files localy
+    output_file("test.html")
+    show(f)
+
+    # To generate html and script to embed into a web page:
+    js, html = components(f)  # returns tuple with javascript and html code to eembed into a web page
+    cdn_js = CDN.js_files[0] # Links to embed into a header of your HTML
