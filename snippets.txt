@@ -1427,7 +1427,7 @@ def read_cars_db(self):
 
 ==============================================
 
-Count script execution time:
+Count script execution time / Measure script performance :
 
 from time import perf_counter
 
