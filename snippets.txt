@@ -506,6 +506,8 @@ USE global AND nonlocal ONLY WHEN IT IS NECESSERY !
 ===========================OOP========================================
 
 Class:
+### NOTE: In Python 3 we do not need to inherit our new class from an object. It was implemented only for backward compatibility with Python 2.
+So use "class NewClass:" instead of "class NewClass(object):"
 
 - starts from capital letter, uses CamelCase convention, do NOT use underscores!
 - inside class we can define class attributes and methods
