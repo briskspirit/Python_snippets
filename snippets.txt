@@ -20,13 +20,10 @@ Basic:
 - del l     - will delete our object from memory(in this case it is our list for example, can be ANY obj!)
 - exit()    - built in function to break your python execution(?)
 - if function returns iterator - you can cast it as list()
-- max() or min()    - returns max or min value from given list
+- max() or min()    - returns max or min value from given list, or will take two integers and return one that is min or max of two
 - import random      and then random.randint(min,max)
 - #! python3   - tells in the beginning of the line which version to use
 - DO NOT USE PRINT FOR DEBUG MESSAGES! Instead use import logging (read at bottom of this file)
-- import sys
-sys.argv - list of passed arguments to our .py file. [0] index will contain self filename
-sys.getsizeof(object) - will return object size(in memory(?)) in bytes.
 ---
 - sorted() will return list sorted, but won't change it itself.
 - object that is started with _ (underscore) means protected.
@@ -36,8 +33,10 @@ sys.getsizeof(object) - will return object size(in memory(?)) in bytes.
 - chr(9) - will convert to char(\t) by its ascii table char number
 - help() - show help for object
 - if __name__ = '__main__':  # - so we are checking the scope. If .py run itself - do code. If it was imported as a module - don't run.
-- print(string, output) - if output is skipped - will out to default output(console), print(string, file) will output to file(should object type file, not just path!)!  
+- print(string, output) - if output is skipped - will out to default output(console), print(string, file) will output to file(should be object type file, not just path!)! 
+- print("\rSome string", end="") - will not print \n in the end and will start from the line begining (\r). So we will print each time in the same line for cleaner output. 
 - MUTABLE: only lists and dictionaries! All other types are immutable: variable, string, tuple, named tuple etc.
+
 Best way to assemble immutable strings is to accumulate string parts in the list and then use "".join() to "glue" these parts.(Best for adding to string or joining a list. For joining pre-determined number of strings use addition(+) operator )
   foobar = 'foo' + 'bar'  # This is good
   foo += 'ooo'  # This is bad, instead you should do:
@@ -931,7 +930,7 @@ timeit.timeit(' "-".join(str(n) for n in range(100)) ', number=10000) # will cal
 ----------------------------------------------------------
 ----------------------------------------------------------
 ----------------------------------------------------------
-Regular Expressions
+Regular Expressions (helpful link: https://pythex.org)
 
 import re
 
@@ -1815,7 +1814,7 @@ Data types:
 ====================================================================================
 ====================================================================================
 
-pip install pyinstaller - library to make standalone executable files(.exe or .app for Mac)
+pip install pyinstaller - library to make standalone executable binary files(.exe(could be compressed with UPX) or .app for Mac)
 
 Call pyinstaller and point to your main script like so(but you will get bunch of supporting/debugging files in your folder):
 pyinstaller __main__.py
@@ -1823,8 +1822,16 @@ pyinstaller __main__.py
 So you could use(will be executed as console app):
 pyinstaller --onefile __main__.py
 
-For GUI apps(could be used to make "blind" apps??):
+For GUI apps:
 pyinstaller --onefile --windowed __main__.py 
+
+For silent/"blnd" apps like daemons:   (if you are using subprocess.run() and similar - don't forget to redirect stderr, stdin to subprocess.DEVNULL !!)
+pyinstaller --onefile --noconsole __main__.py 
+
+# Will include any file inside our packaged app. To access this file from your script use sys._MEIPASS + "\sample.pdf" - this is for pyinstaller temp dir only.
+pyinstaller --onefile --noconsole --add-data "C:\somepath\sample.pdf;." __main__.py 
+
+--icon "C:\some_path\some_icon.ico"
 
 
 ====================================================================================
@@ -1862,3 +1869,127 @@ if __name__ == "__main__":
     # To generate html and script to embed into a web page:
     js, html = components(f)  # returns tuple with javascript and html code to eembed into a web page
     cdn_js = CDN.js_files[0] # Links to embed into a header of your HTML
+
+====================================================================================
+
+import sys - This module provides access to some variables used or maintained by the interpreter and to functions that interact strongly with the interpreter
+
+sys.getsizeof(some_data) - Return the size of an object in bytes. The object can be any type of object. All built-in objects will return correct results, but this does not have to hold true for third-party extensions as it is implementation specific. Only the memory consumption directly attributed to the object is accounted for, not the memory consumption of objects it refers to.
+
+sys.argv - The list of command line arguments passed to a Python script. argv[0] is the script name (it is operating system dependent whether this is a full pathname or not). If the command was executed using the -c command line option to the interpreter, argv[0] is set to the string '-c'. If no script name was passed to the Python interpreter, argv[0] is the empty string.
+
+sys.getallocatedblocks() - Return the number of memory blocks currently allocated by the interpreter, regardless of their size. This function is mainly useful for tracking and debugging memory leaks.
+
+sys.platform - This string contains a platform identifier that can be used to append platform-specific components to sys.path, for instance.
+
+sys.setrecursionlimit(limit) - Set the maximum depth of the Python interpreter stack to limit. This limit prevents infinite recursion from causing an overflow of the C stack and crashing Python.
+
+sys.version - A string containing the version number of the Python interpreter plus additional information on the build number and compiler used.
+
+sys.exit() - Exit from a python program without any warnings (Like regular exit() or quit() could cause) (Good when converted to binary executable)
+
+... and lots more! 
+
+====================================================================================
+
+from ctypes import * - is a foreign function library for Python. It provides C compatible data types, and allows calling functions in DLLs or shared libraries. It can be used to wrap these libraries in pure Python. So we are able to implement strict data type checks in Python.
+
+====================================================================================
+
+Stacks, Queues and Deques - all are built in into collections module(import collections), no need to implement by yourself.
+
+====================================================================================
+
+import scapy.all as scapy - Powerful network analisys module (For Win users - install Npcap from Nmap project to work with Layer 2)
+
+scapy.arping(ip) - will send a broadcast packet with ip and get an answer with MAC if machine is inside network. Could be used with subnet mask to "ping" everyone in a subnet. (Like: 192.0.0.1/24)
+
+arp_request = scapy.ARP(pdst=ip) - create an ARP packet
+scapy.ls(scapy.ARP()) - show what fields we can use in ARP() class
+
+broadcast = scapy.Ether(dst="ff:ff:ff:ff:ff:ff") - create an Ether packet with broadcast MAC address
+scapy.ls(scapy.Ether()) - show what fields we can use in Ether() class
+
+arp_packet = broadcast / arp_request - Assembling packet to send from Ether packet + ARP packet
+print(arp_packet.summary()) # Shows us short summary with packet type and short info
+arp_packet.show()  # Shows us full summary of the composed packet(s)
+.show() - method can be used on any packet(so any Ether object) to show it's contents in readable form.
+
+scapy.sr() - Send/Receive function
+scapy.srp() - Send/Receive function that allows us to use custom Ether part of our composed packet, both will return a list of two lists with answered and unanswered results(this lists will contain tuples with scapy Ether objects(packet sent, packet received))
+
+scapy.send(arp_packet) # Will send the packet without waiting for a response
+
+scapy.sniff(iface=interface, store=False, prn=process_sniffed_packet, filter="arp") # iface - interface name, store - store packets in memory or not, prn - bind a function that will be called when packet sniffed, filter - BPF filters to filter captured packets(optional). Binded func will get scapy Ether object, that contains layers(indexed). For example regular http packet will be sniffed as Ether/IP/TCP (so will have 3 layers from 0 to 2). ARP packet will have only Ether/ARP(so only 2 layers 0 and 1). DNS will be as Ether/IP/UDP/DNS(so 4 layers).
+Filters example: udp, arp, tcp, port 21, port 80, etc. (Use BPF syntax http://biot.com/capstats/bpf.html)
+
+scapy.show_interfaces() - will return list of interfaces (sutable for Windows with str long names!)
+
+packet.haslayer() - check if Ether object has needed layer
+
+======
+from scapy.layers import http - module that allows to filter HTTP packets (helper for scapy) (installed by pip install scapy_http)
+======
+
+====================================================================================
+from importlib import util
+
+#Executing external python file 
+spec = util.spec_from_file_location('updater', 'Z:\\task.py') #name of executing file(will be in __name__), path to python script
+module = util.module_from_spec(spec)
+try:
+  spec.loader.exec_module(module) #Try to execute module if it exists
+
+====================================================================================
+import subprocess
+
+Newer version python > 3.5:
+
+subprocess.run(["ls", "-l"])  # doesn't capture output
+
+subprocess.run("exit 1", shell=True, check=True)
+
+Older version python < 3.5:
+
+subprocess.check_output("something.exe") - will run external script/exe/command.
+
+subprocess.Popen("some command", shell=True) - will run and won't wait for execution to finish, will continue running our script.
+
+
+
+====================================================================================
+
+import pynput - This library allows you to control and monitor input devices. Currently, mouse and keyboard input and monitoring are supported.
+
+import pynput.keyboard
+
+keyboard_listener = pynput.keyboard.Listener(on_press=callback_func) # Specifying callback func that will be executed with each key strike.
+with keyboard_listener:
+  keyboard_listener.join()
+
+
+====================================================================================
+
+import socket - Connection library
+
+# As we are usong TCP stream - you need to serialize data sent. You could use JSON(with help of base64 for binary data) or Pickle to do so on both ends.
+
+connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM) - creating a socket object
+connection.connect(("192.168.1.20", 4444)) - connecting to IP with the port opened(passing a tuple of two items).
+
+connection.send("our payload") - Sending payload 
+
+data = connection.recv(1024) # listening for data, passing buffer size for received data, returns received data. Will pause and wait for an incoming data!
+
+connection.close() - closing active connection
+
+---
+
+listener = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+listener.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1) - allows us to reuse opened socket (if connection breaks and client will reconnect)
+listener.bind(("192.168.1.20", 4444 )) - binds to system IP and port to listen at
+
+listener.listen(0) - number of connections that will be queued before they get rejected
+connection, address = listener.accept() - accept connections, will wait for a connection(will pause your script!), will return two values - socket(that we will use for communication) and address(from)
+
+====================================================================================
