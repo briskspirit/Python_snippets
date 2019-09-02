@@ -1876,7 +1876,7 @@ import sys - This module provides access to some variables used or maintained by
 
 sys.getsizeof(some_data) - Return the size of an object in bytes. The object can be any type of object. All built-in objects will return correct results, but this does not have to hold true for third-party extensions as it is implementation specific. Only the memory consumption directly attributed to the object is accounted for, not the memory consumption of objects it refers to.
 
-sys.argv - The list of command line arguments passed to a Python script. argv[0] is the script name (it is operating system dependent whether this is a full pathname or not). If the command was executed using the -c command line option to the interpreter, argv[0] is set to the string '-c'. If no script name was passed to the Python interpreter, argv[0] is the empty string.
+sys.argv - The list of command line arguments passed to a Python script. argv[0] is the script name (it is operating system dependent whether this is a full pathname or not). If the command was executed using the -c command line option to the interpreter, argv[0] is set to the string '-c'. If no script name was passed to the Python interpreter, argv[0] is the empty string. (Or use more advanced module argparse for more options)
 
 sys.getallocatedblocks() - Return the number of memory blocks currently allocated by the interpreter, regardless of their size. This function is mainly useful for tracking and debugging memory leaks.
 
@@ -1992,4 +1992,27 @@ listener.bind(("192.168.1.20", 4444 )) - binds to system IP and port to listen a
 listener.listen(0) - number of connections that will be queued before they get rejected
 connection, address = listener.accept() - accept connections, will wait for a connection(will pause your script!), will return two values - socket(that we will use for communication) and address(from)
 
+====================================================================================
+
+from enum import Enum - An enumeration is a set of symbolic names (members) bound to unique, constant values. Within an enumeration, the members can be compared by identity, and the enumeration itself can be iterated over.
+Member values can be anything: int, str, etc.. If the exact value is unimportant you may use auto instances and an appropriate value will be chosen for you. Care must be taken if you mix auto with other values.
+
+
+class Color(Enum):
+  RED = 1
+  GREEN = 2
+  BLUE = 3
+====================================================================================
+
+import itertools - This module implements a number of iterator building blocks inspired by constructs from APL, Haskell, and SML. Each has been recast in a form suitable for Python.
+
+count() - count(10) --> 10 11 12 13 14 ...
+cycle() - cycle('ABCD') --> A B C D A B C D ...
+repeat() - repeat(10, 3) --> 10 10 10
+
+accumulate() - accumulate([1,2,3,4,5]) --> 1 3 6 10 15
+chain() - chain('ABC', 'DEF') --> A B C D E F
+compress() - compress('ABCDEF', [1,0,1,0,1,1]) --> A C E F
+
+and more...(read docs)
 ====================================================================================
