@@ -49,6 +49,16 @@ Best way to assemble immutable strings is to accumulate string parts in the list
 -------------------------------------------------------------
 
 Print Formating:   (https://pyformat.info)
+EVEN NEWER METHOD(version>=3.6):
+f-Strings! 
+Just like this:
+name = 'Vasia'
+surname = 'Pupkin'
+
+f'Your name is {name} and surname is {surname}'
+
+- Function and class calls could be used also! And methods like .lower() too!
+
 NEWEST METHOD:
 print("some text {} here, cos it {} be more {}".format('place', 'is', 'convenient'))
 ---
@@ -2015,4 +2025,23 @@ chain() - chain('ABC', 'DEF') --> A B C D E F
 compress() - compress('ABCDEF', [1,0,1,0,1,1]) --> A C E F
 
 and more...(read docs)
+====================================================================================
+import uuid - This module provides immutable UUID objects (the UUID class) and the functions uuid1(), uuid3(), uuid4(), uuid5() for generating version 1, 3, 4, and 5 UUIDs as specified in RFC 4122.
+
+If all you want is a unique ID, you should probably call uuid1() or uuid4(). Note that uuid1() may compromise privacy since it creates a UUID containing the computer’s network address. uuid4() creates a random UUID.
+
+uuid.uuid4 - will return string with random UUID 
+====================================================================================
+import tempfile - This module creates temporary files and directories. It works on all supported platforms. TemporaryFile, NamedTemporaryFile, TemporaryDirectory, and SpooledTemporaryFile are high-level interfaces which provide automatic cleanup and can be used as context managers. mkstemp() and mkdtemp() are lower-level functions which require manual cleanup.
+READ: https://docs.python.org/3/library/tempfile.html
+====================================================================================
+====================================================================================
+====================================================================================
+====================================================================================
+====================================================================================
+====================================================================================
+====================================================================================
+====================================================================================
+====================================================================================
+====================================================================================
 ====================================================================================
